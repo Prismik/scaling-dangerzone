@@ -1,0 +1,134 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', 'download' ]
+2 info using npm@2.0.2
+3 info using node@v0.10.32
+4 warn package.json karma-chrome-launcher@0.1.5 No README data
+5 warn package.json karma-coffee-preprocessor@0.2.1 No README data
+6 warn package.json passport-local@0.1.6 No README data
+7 verbose readDependencies using package.json deps
+8 verbose cache add [ 'download', null ]
+9 verbose cache add spec="download" args=["download",null]
+10 verbose parsed spec { raw: 'download',
+10 verbose parsed spec   scope: null,
+10 verbose parsed spec   name: 'download',
+10 verbose parsed spec   rawSpec: '',
+10 verbose parsed spec   spec: '*',
+10 verbose parsed spec   type: 'range' }
+11 verbose parsed spec { raw: 'download',
+11 verbose parsed spec   scope: null,
+11 verbose parsed spec   name: 'download',
+11 verbose parsed spec   rawSpec: '',
+11 verbose parsed spec   spec: '*',
+11 verbose parsed spec   type: 'range' }
+12 verbose addNamed [ 'download', '*' ]
+13 verbose addNamed [ null, '*' ]
+14 silly lockFile c336f035-download download@*
+15 verbose lock download@* /Users/francisbeauchamps/.npm/c336f035-download.lock
+16 silly addNameRange { name: 'download', range: '*', hasData: false }
+17 verbose mapToRegistry name download
+18 verbose mapToRegistry uri https://registry.npmjs.org/download
+19 verbose request on initialization, where is /download
+20 verbose request after pass 1, where is /download
+21 verbose request url raw /download
+22 verbose request resolving registry [ 'https://registry.npmjs.org/', './download' ]
+23 verbose request after pass 2, where is https://registry.npmjs.org/download
+24 verbose request no auth needed
+25 info attempt registry request try #1 at 11:19:08
+26 verbose request id 321b8dc356f2b7bd
+27 verbose etag "DM7S7GQY0Z9I0DW1TI81K37NP"
+28 http request GET https://registry.npmjs.org/download
+29 http 304 https://registry.npmjs.org/download
+30 silly registry.get cb [ 304,
+30 silly registry.get   { date: 'Tue, 28 Oct 2014 15:19:07 GMT',
+30 silly registry.get     server: 'Apache',
+30 silly registry.get     via: '1.1 varnish',
+30 silly registry.get     'last-modified': 'Tue, 28 Oct 2014 15:18:50 GMT',
+30 silly registry.get     'cache-control': 'max-age=60',
+30 silly registry.get     etag: '"DM7S7GQY0Z9I0DW1TI81K37NP"',
+30 silly registry.get     age: '17',
+30 silly registry.get     'x-served-by': 'cache-jfk1021-JFK',
+30 silly registry.get     'x-cache': 'HIT',
+30 silly registry.get     'x-cache-hits': '3',
+30 silly registry.get     'x-timer': 'S1414509547.680891,VS0,VE0',
+30 silly registry.get     vary: 'Accept',
+30 silly registry.get     'content-length': '0',
+30 silly registry.get     'keep-alive': 'timeout=10, max=50',
+30 silly registry.get     connection: 'Keep-Alive' } ]
+31 verbose etag https://registry.npmjs.org/download from cache
+32 silly addNameRange number 2 { name: 'download', range: '*', hasData: true }
+33 silly addNameRange versions [ 'download',
+33 silly addNameRange   [ '0.1.0',
+33 silly addNameRange     '0.1.1',
+33 silly addNameRange     '0.1.2',
+33 silly addNameRange     '0.1.3',
+33 silly addNameRange     '0.1.4',
+33 silly addNameRange     '0.1.5',
+33 silly addNameRange     '0.1.6',
+33 silly addNameRange     '0.1.7',
+33 silly addNameRange     '0.1.8',
+33 silly addNameRange     '0.1.9',
+33 silly addNameRange     '0.1.10',
+33 silly addNameRange     '0.1.11',
+33 silly addNameRange     '0.1.12',
+33 silly addNameRange     '0.1.13',
+33 silly addNameRange     '0.1.14',
+33 silly addNameRange     '0.1.15',
+33 silly addNameRange     '0.1.16',
+33 silly addNameRange     '0.1.17',
+33 silly addNameRange     '0.1.18',
+33 silly addNameRange     '0.2.0',
+33 silly addNameRange     '0.2.1',
+33 silly addNameRange     '0.2.2',
+33 silly addNameRange     '0.2.3',
+33 silly addNameRange     '0.2.4',
+33 silly addNameRange     '1.0.0',
+33 silly addNameRange     '1.0.1',
+33 silly addNameRange     '1.0.2',
+33 silly addNameRange     '0.1.19',
+33 silly addNameRange     '1.0.3',
+33 silly addNameRange     '1.0.4',
+33 silly addNameRange     '1.0.5',
+33 silly addNameRange     '1.0.6',
+33 silly addNameRange     '1.0.7',
+33 silly addNameRange     '2.0.0',
+33 silly addNameRange     '3.0.0',
+33 silly addNameRange     '3.0.1',
+33 silly addNameRange     '3.1.0',
+33 silly addNameRange     '3.1.1',
+33 silly addNameRange     '3.1.2' ] ]
+34 verbose addNamed [ 'download', '3.1.2' ]
+35 verbose addNamed [ '3.1.2', '3.1.2' ]
+36 silly lockFile 8ec91c7d-download-3-1-2 download@3.1.2
+37 verbose lock download@3.1.2 /Users/francisbeauchamps/.npm/8ec91c7d-download-3-1-2.lock
+38 silly lockFile 8abe54b9--org-download-download-3-1-2-tgz https://registry.npmjs.org/download/-/download-3.1.2.tgz
+39 verbose lock https://registry.npmjs.org/download/-/download-3.1.2.tgz /Users/francisbeauchamps/.npm/8abe54b9--org-download-download-3-1-2-tgz.lock
+40 verbose addRemoteTarball [ 'https://registry.npmjs.org/download/-/download-3.1.2.tgz',
+40 verbose addRemoteTarball   '844a4a39729d95e84a95f9bd81a8285a4f2662ab' ]
+41 info retry fetch attempt 1 at 11:19:08
+42 info attempt registry request try #1 at 11:19:08
+43 http fetch GET https://registry.npmjs.org/download/-/download-3.1.2.tgz
+44 http fetch 200 https://registry.npmjs.org/download/-/download-3.1.2.tgz
+45 silly fetchAndShaCheck shasum 844a4a39729d95e84a95f9bd81a8285a4f2662ab
+46 silly lockFile 8abe54b9--org-download-download-3-1-2-tgz https://registry.npmjs.org/download/-/download-3.1.2.tgz
+47 silly lockFile 8abe54b9--org-download-download-3-1-2-tgz https://registry.npmjs.org/download/-/download-3.1.2.tgz
+48 silly lockFile 8ec91c7d-download-3-1-2 download@3.1.2
+49 silly lockFile 8ec91c7d-download-3-1-2 download@3.1.2
+50 silly lockFile c336f035-download download@*
+51 silly lockFile c336f035-download download@*
+52 verbose stack Error: EACCES, mkdir '/Users/francisbeauchamps/.npm/download/3.1.2'
+53 verbose cwd /Users/francisbeauchamps/Documents/scaling-dangerzone
+54 error Darwin 13.3.0
+55 error argv "node" "/usr/local/bin/npm" "install" "download"
+56 error node v0.10.32
+57 error npm  v2.0.2
+58 error path /Users/francisbeauchamps/.npm/download/3.1.2
+59 error code EACCES
+60 error errno 3
+61 error Error: EACCES, mkdir '/Users/francisbeauchamps/.npm/download/3.1.2'
+61 error  { [Error: EACCES, mkdir '/Users/francisbeauchamps/.npm/download/3.1.2']
+61 error   errno: 3,
+61 error   code: 'EACCES',
+61 error   path: '/Users/francisbeauchamps/.npm/download/3.1.2',
+61 error   parent: 'sig' }
+62 error Please try running this command again as root/Administrator.
+63 verbose exit [ 3, true ]

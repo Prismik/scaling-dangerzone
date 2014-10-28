@@ -4,7 +4,10 @@ angular.module('sigApp')
   .controller('NavbarCtrl', function ($scope, $location, Auth) {
     $scope.menu = [{
       'title': 'Home',
-      'link': '/'
+      'link': '/',
+    }, {
+      'title': 'Dashboard',
+      'link': '/dashboard'
     }];
 
     $scope.isCollapsed = true;

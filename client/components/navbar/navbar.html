@@ -10,7 +10,7 @@
       <a href="/" class="navbar-brand">sig</a>
     </div>
     <div collapse="isCollapsed" class="navbar-collapse collapse" id="navbar-main">
-      <ul class="nav navbar-nav">
+      <ul ng-hide="!isLoggedIn()" class="nav navbar-nav">
         <li ng-repeat="item in menu" ng-class="{active: isActive(item.link)}">
             <a ng-href="{{item.link}}">{{item.title}}</a>
         </li>

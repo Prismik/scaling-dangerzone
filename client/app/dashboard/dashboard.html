@@ -1,0 +1,27 @@
+<div ng-include="'components/navbar/navbar.html'"></div>
+<div class="col-md-12">
+	<h1>Dashboard</h1>
+	
+	<div ng-app="sigApp" ng-controller="DashboardCtrl">
+    <div id="map"></div>
+	
+		<div class="row">
+			<div class="col-md-6"> 
+				<h2>Clients</h2>
+				<ul ng-repeat="marker in markers | orderBy : 'title'">
+					<li>
+						<a href="#" ng-click="openInfoWindow($event, marker)">{{marker.title}}</a>				
+					</li>
+				</ul>
+			</div>
+			
+			<div class="col-md-6"> 
+				<h2>Potential clients</h2>
+				<ul>
+					
+				</ul>
+			</div>
+		</div>
+
+	</div>
+</div>
