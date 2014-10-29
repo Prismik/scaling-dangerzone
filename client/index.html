@@ -21,7 +21,11 @@
       <!-- endinjector -->
     <!-- endbuild -->
     <!-- Google Maps Dependency -->
-    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script>
+      google.load("visualization", "1", {packages: ['columnchart']});
+    </script>
   </head>
   <body ng-app="sigApp">
     <!--[if lt IE 7]>

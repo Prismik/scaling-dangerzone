@@ -45,15 +45,15 @@ var potential = [
 
 angular.module('sigApp')
   .controller('DashboardCtrl', function ($scope) {
-  	var infoWindows = [];
+    var infoWindows = [];
     var mapOptions = {
-    		scrollwheel: false,
+        scrollwheel: false,
         zoom: 4,
         center: new google.maps.LatLng(40.0000, -98.0000),
-        mapTypeId: google.maps.MapTypeId.TERRAIN
+        mapTypeId: 'terrain'
     }
 
-		$scope.directionsService = new google.maps.DirectionsService();
+    $scope.directionsService = new google.maps.DirectionsService();
     $scope.directionsDisplay = new google.maps.DirectionsRenderer();
     $scope.map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
@@ -63,6 +63,59 @@ angular.module('sigApp')
     $scope.directionsDisplay.setMap($scope.map);
     $scope.directionsDisplay.setOptions( { suppressMarkers: true } );
     
+    var elevator = new google.maps.ElevationService();
+		var chart = new google.visualization.ColumnChart(document.getElementById('chart'));
+		var polyline;
+
+		// Takes an array of ElevationResult objects, draws the path on the map
+		// and plots the elevation profile on a Visualization API ColumnChart.
+		var plotElevation = function(results, status) {
+		  if (status != google.maps.ElevationStatus.OK) {
+		    return;
+		  }
+		  var elevations = results;
+		  // Extract the elevation samples from the returned results
+		  // and store them in an array of LatLngs.
+		  var elevationPath = [];
+		  for (var i = 0; i < results.length; i++) {
+		    elevationPath.push(elevations[i].location);
+		  }
+
+		  // Display a polyline of the elevation path.
+		  var pathOptions = {
+		    path: elevationPath,
+		    strokeColor: '#0000CC',
+		    opacity: 0.4,
+		    map: $scope.map
+		  }
+		  polyline = new google.maps.Polyline(pathOptions);
+
+		  
+			var data = new google.visualization.DataTable();
+		  // Extract the data from which to populate the chart.
+		  // Because the samples are equidistant, the 'Sample'
+		  // column here does double duty as distance along the
+		  // X axis.
+		  data.addColumn('string', 'Sample');
+		  data.addColumn('number', 'Elevation');
+		  for (var i = 0; i < results.length; i++) {
+		    data.addRow(['', elevations[i].elevation]);
+		  }
+
+		  // Draw the chart using the data within its DIV.
+		  document.getElementById('chart').style.display = 'block';
+		  chart.draw(data, {
+		    height: 150,
+		    legend: 'none',
+		    titleY: 'Elevation (m)',
+		    title: 'Elevation Chart',
+		    titleTextStyle: {
+		    	fontSize: 20,
+		    	bold: true
+		    }
+		  });
+		}
+
     var calcRoute = function () {
 		  var start = cities[0].lat + "," + cities[0].long;
 		  var end = "toronto, ont"; // TODO how to decide of the end location ?
@@ -93,12 +146,12 @@ angular.module('sigApp')
 		      var summaryPanel = document.getElementById('route');
 		      var summary = '<h2>Direction steps</h2><br><table class="table">';
 		      var step = 1;
+		      var lats = [];
 		      // For each route, display summary information.
 		      for (var i = 0; i < route.legs.length; i++) {
 		      	var myRoute = route.legs[i];
-		      	console.log(myRoute);
 					  for (var j = 0; j < myRoute.steps.length; j++) {
-				     
+				     lats.push(new google.maps.LatLng(myRoute.steps[j].start_location.lat(), myRoute.steps[j].start_location.lng()));
 			        summary += '<tr>' + 
 			        	'<td>'+step.toString()+'</td>' +
 			        	'<td>'+myRoute.steps[j].instructions+'</td>' +
@@ -107,6 +160,13 @@ angular.module('sigApp')
 			        ++step;
 					  }
 		      }
+
+				  var pathRequest = {
+				    'path': lats,
+				    'samples': 256
+				  }
+
+				  elevator.getElevationAlongPath(pathRequest, plotElevation);
 
 		      summary += '</table>'
 		      summaryPanel.innerHTML = summary;
@@ -273,5 +333,4 @@ angular.module('sigApp')
         e.preventDefault();
         google.maps.event.trigger(selectedMarker, 'click');
     }
-
   });
