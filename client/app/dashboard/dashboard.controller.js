@@ -55,7 +55,7 @@ angular.module('sigApp')
     
     $scope.directionsDisplay.setMap($scope.map);
     $scope.directionsDisplay.setOptions( { suppressMarkers: true } );
-    var infoWindow = new google.maps.InfoWindow();
+    var infoWindows = [];
     
     var calcRoute = function () {
 		  var start = cities[0].lat + "," + cities[0].long;
@@ -84,7 +84,7 @@ angular.module('sigApp')
 		    if (status == google.maps.DirectionsStatus.OK) {
 		      $scope.directionsDisplay.setDirections(response);
 		      var route = response.routes[0];
-		      var summaryPanel = document.getElementById('directions_panel');
+		      var summaryPanel = document.getElementById('route');
 		      summaryPanel.innerHTML = '';
 		      // For each route, display summary information.
 		      for (var i = 0; i < route.legs.length; i++) {
@@ -223,7 +223,11 @@ angular.module('sigApp')
 
         
         var infowindow = new google.maps.InfoWindow({ content: feedClientInfo('data') });
+        infoWindows.push(infowindow);
         google.maps.event.addListener(marker, 'click', function() {
+        	for (var i = 0; i < infoWindows.length; i++){
+			      infoWindows[i].close();
+			    }
 			    infowindow.open($scope.map,marker);
 			  });
     }
@@ -247,7 +251,11 @@ angular.module('sigApp')
 
         
         var infowindow = new google.maps.InfoWindow({ content: feedPotentialInfo('data') });
+        infoWindows.push(infowindow);
         google.maps.event.addListener(marker, 'click', function() {
+        	for (var i = 0; i < infoWindows.length; i++){
+			      infoWindows[i].close();
+			    }
 			    infowindow.open($scope.map,marker);
 			  });
     }
