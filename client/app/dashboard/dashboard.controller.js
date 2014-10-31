@@ -3,12 +3,12 @@
 //Data
 var cities = [
     {
-        city : 'Toronto',
+        city : 'Hamilton',
         desc : 'This is the best city in the world!',
         article: 'Pizza',
         et: 'Half an hour',
-        lat : 43.7000,
-        long : -79.4000
+        lat : 43.243603,
+        long : -79.889075
     },
     {
         city : 'New York',
@@ -42,10 +42,10 @@ var potential = [
         long : -79.3000
     },
     {
-        city : 'Closer to Toronto',
+        city : 'Buffalo',
         desc : 'This city is live!',
-        lat : 41.7050,
-        long : -79.4020
+        lat : 42.886447,
+        long : -78.878369
     },
     {
         city : 'Kinda close Toronto',

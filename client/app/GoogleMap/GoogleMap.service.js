@@ -2,6 +2,8 @@
 
 angular.module('sigApp')
   .factory('GoogleMap', function () {
+    var firstStore = new google.maps.LatLng(43.7000 , -79.4000);
+    var secondStore = new google.maps.LatLng(40.7000 , -79.9000);
     var map = null;
     var routePanel = null;
     var redMarkers = [];
@@ -67,21 +69,18 @@ angular.module('sigApp')
       });
     }
 
-    var calcRoute = function (cities, potential) {
-      var start = cities[0].lat + "," + cities[0].long;
-      var end = cities[1].lat + "," + cities[1].long;
+    var prepareRequest = function(start, end, cities, potential) {
       var waypts = [];
       for (var i = 0; i < cities.length; i++) {
           waypts.push({ location:cities[i].lat + "," + cities[i].long, stopover:true });
       }
 
       var potWpts = [];
-      var startLatlng = new google.maps.LatLng(cities[0].lat , cities[0].long);
       for (var i = 0; i < potential.length; i++) {
         var curLatLng = new google.maps.LatLng(potential[i].lat , potential[i].long);
         potWpts.push({ 
           potential: potential[i], 
-          distance: google.maps.geometry.spherical.computeDistanceBetween(startLatlng, curLatLng)
+          distance: google.maps.geometry.spherical.computeDistanceBetween(secondStore, curLatLng)
         });
       }
 
@@ -92,50 +91,81 @@ angular.module('sigApp')
         waypts.push({ location:potWpts[i].potential.lat + "," + potWpts[i].potential.long, stopover:true });
       }
 
-      console.log (waypts);
-      var request = {
+      return {
           origin: start,
           destination: end,
           waypoints: waypts,
           optimizeWaypoints: true,
           travelMode: google.maps.TravelMode.DRIVING
       };
+    }
 
-      // Call the direction service and on OK status, print the travel steps
-      directionsService.route(request, function(response, status) {
-        if (status == google.maps.DirectionsStatus.OK) {
-          directionsDisplay.setDirections(response);
-          var route = response.routes[0];
-          
-          var summary = '<h2>Direction steps</h2><br><table class="table">';
-          var step = 1;
-          var lats = [];
-          // For each route, display summary information.
-          for (var i = 0; i < route.legs.length; i++) {
-            var myRoute = route.legs[i];
-            for (var j = 0; j < myRoute.steps.length; j++) {
-             lats.push(new google.maps.LatLng(myRoute.steps[j].start_location.lat(), myRoute.steps[j].start_location.lng()));
-              summary += '<tr>' + 
-                '<td>'+step.toString()+'</td>' +
-                '<td>'+myRoute.steps[j].instructions+'</td>' +
-                '<td>'+myRoute.steps[j].distance.value+' m</td>' +
-              '</tr>';
-              ++step;
-            }
-          }
-
-          var pathRequest = {
-            'path': lats,
-            'samples': 256
-          }
-
-          elevator.getElevationAlongPath(pathRequest, plotElevation);
-
-          summary += '</table>'
-          routePanel.innerHTML = summary;
+    var printRouteSummary = function(response) {
+      directionsDisplay.setDirections(response);
+      var route = response.routes[0];
+      
+      var summary = '<h2>Direction steps</h2><br><table class="table">';
+      var step = 1;
+      var lats = [];
+      // For each route, display summary information.
+      for (var i = 0; i < route.legs.length; i++) {
+        var myRoute = route.legs[i];
+        for (var j = 0; j < myRoute.steps.length; j++) {
+          lats.push(new google.maps.LatLng(myRoute.steps[j].start_location.lat(), myRoute.steps[j].start_location.lng()));
+          summary += '<tr>' + 
+            '<td>'+step.toString()+'</td>' +
+            '<td>'+myRoute.steps[j].instructions+'</td>' +
+            '<td>'+myRoute.steps[j].distance.value+' m</td>' +
+          '</tr>';
+          ++step;
         }
-        console.log(status);
+      }
+
+      var pathRequest = {
+        'path': lats,
+        'samples': 256
+      }
+
+      elevator.getElevationAlongPath(pathRequest, plotElevation);
+
+      summary += '</table>'
+      routePanel.innerHTML = summary;
+    }
+
+    var selectOptimalRoute = function(requestA, requestB) {
+      var totalA = 0;
+      var totalB = 0;
+      directionsService.route(requestA, function(responseA, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+          var route = responseA.routes[0];
+          for (var i = 0; i < route.legs.length; i++) {
+            totalA += route.legs[i].distance.value;
+          }
+
+          directionsService.route(requestB, function(responseB, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+              var route = responseB.routes[0];
+              for (var i = 0; i < route.legs.length; i++) {
+                totalB += route.legs[i].distance.value;
+              }
+
+              if (totalA < totalB)
+                printRouteSummary(responseA);
+              else 
+                printRouteSummary(responseB);
+            }
+          });
+        }
       });
+    }
+
+    var calcRoute = function (cities, potential) {
+      var start = firstStore.lat() + "," + firstStore.lng();
+      var end = secondStore.lat() + "," + secondStore.lng();
+      var requestA = prepareRequest(start, end, cities, potential);
+      var requestB = prepareRequest(end, start, cities, potential);
+
+      selectOptimalRoute(requestA, requestB);
     }
 
     var createBlueMarker = function(info) {
