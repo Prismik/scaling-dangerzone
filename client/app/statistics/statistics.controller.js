@@ -1,6 +1,6 @@
 'use strict';
 
 angular.module('sigApp')
-  .controller('StatisticsCtrl', function ($scope) {
+  .controller('StatisticsCtrl',['$scope', 'Stats', function ($scope, Stats) {
     $scope.message = 'Hello';
-  });
+  }]);

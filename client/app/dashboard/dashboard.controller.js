@@ -69,8 +69,11 @@ var potential = [
 
 angular.module('sigApp')
   .controller('DashboardCtrl', ['$scope', 'GoogleMap', function ($scope, GoogleMap) {
-		GoogleMap.initialize(document.getElementById('map'), document.getElementById('route'), 
-													cities, potential);
+    var selectedMarkers = [];
+    var previousMarker = null;
+	GoogleMap.initialize(document.getElementById('map'), 
+						 document.getElementById('route'), 
+						 selectedMarkers, potential);
     for (var i = 0; i < cities.length; ++i){
       GoogleMap.createBlueMarker(cities[i]);
     }
@@ -78,12 +81,24 @@ angular.module('sigApp')
     for (var j = 0; j < potential.length; ++j){
       GoogleMap.createRedMarker(potential[j]);
     }  
+
     $scope.redMarkers = GoogleMap.redMarkers;
     $scope.blueMarkers = GoogleMap.blueMarkers;
+    $scope.isMarkerSelected = function(marker) {
+        return selectedMarkers.indexOf(marker) > -1;
+    }
+
     $scope.openInfoWindow = function(e, selectedMarker){
         e.preventDefault();
-        google.maps.event.trigger(selectedMarker, 'click');
+        selectedMarker.infoWindow.close();
+
+        previousMarker = selectedMarker;
+        if (selectedMarkers.indexOf(selectedMarker) > -1)
+            selectedMarkers.splice(selectedMarkers.indexOf(selectedMarker), 1);
+        else {
+            selectedMarkers.push(selectedMarker);
+            google.maps.event.trigger(selectedMarker, 'click');
+        }
+
     }
-    
-		
   }]);

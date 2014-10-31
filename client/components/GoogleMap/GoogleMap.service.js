@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sigApp')
-  .factory('GoogleMap', function () {
+  .factory('GoogleMap', function ($rootScope) {
     var firstStore = new google.maps.LatLng(43.7000 , -79.4000);
     var secondStore = new google.maps.LatLng(40.7000 , -79.9000);
     var map = null;
@@ -72,7 +72,7 @@ angular.module('sigApp')
     var prepareRequest = function(start, end, cities, potential) {
       var waypts = [];
       for (var i = 0; i < cities.length; i++) {
-          waypts.push({ location:cities[i].lat + "," + cities[i].long, stopover:true });
+          waypts.push({ location:cities[i].info.lat + "," + cities[i].info.long, stopover:true });
       }
 
       var potWpts = [];
@@ -160,6 +160,9 @@ angular.module('sigApp')
     }
 
     var calcRoute = function (cities, potential) {
+      for (var i = 0; i < infoWindows.length; i++) {
+        infoWindows[i].close();
+      }
       var start = firstStore.lat() + "," + firstStore.lng();
       var end = secondStore.lat() + "," + secondStore.lng();
       var requestA = prepareRequest(start, end, cities, potential);
@@ -169,17 +172,20 @@ angular.module('sigApp')
     }
 
     var createBlueMarker = function(info) {
+      var infoWindow = new google.maps.InfoWindow({ content: feedClientInfo(info) });
+      infoWindows.push(infoWindow);
+
       var marker = new google.maps.Marker({
           icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
           map: map,
           position: new google.maps.LatLng(info.lat, info.long),
           title: info.city,
-          content: '<div class="infoWindowContent">' + info.desc + '</div>'
+          content: '<div class="infoWindowContent">' + info.desc + '</div>',
+          infoWindow: infoWindow,
+          info: info
       });
       blueMarkers.push(marker);
-
-      var infoWindow = new google.maps.InfoWindow({ content: feedClientInfo(info) });
-      infoWindows.push(infoWindow);
+      
       google.maps.event.addListener(marker, 'click', function() {
         for (var i = 0; i < infoWindows.length; i++) {
           infoWindows[i].close();
@@ -189,17 +195,20 @@ angular.module('sigApp')
     }
     
     var createRedMarker = function(info) {
+      var infoWindow = new google.maps.InfoWindow({ content: feedPotentialInfo(info) });
+      infoWindows.push(infoWindow);
+
       var marker = new google.maps.Marker({
           icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
           map: map,
           position: new google.maps.LatLng(info.lat, info.long),
           title: info.city,
-          content: '<div class="infoWindowContent">' + info.desc + '</div>'
+          content: '<div class="infoWindowContent">' + info.desc + '</div>',
+          infoWindow: infoWindow,
+          info: info
       });
       redMarkers.push(marker);
 
-      var infoWindow = new google.maps.InfoWindow({ content: feedPotentialInfo(info) });
-      infoWindows.push(infoWindow);
       google.maps.event.addListener(marker, 'click', function() {
         for (var i = 0; i < infoWindows.length; i++) {
           infoWindows[i].close();
@@ -291,16 +300,6 @@ angular.module('sigApp')
       for (var i = 0; i < results.length; i++) {
         elevationPath.push(elevations[i].location);
       }
-
-      // Display a polyline of the elevation path.
-      var pathOptions = {
-        path: elevationPath,
-        strokeColor: '#0000CC',
-        opacity: 0.4,
-        map: map
-      }
-      polyline = new google.maps.Polyline(pathOptions);
-
       
       var data = new google.visualization.DataTable();
       // Extract the data from which to populate the chart.
