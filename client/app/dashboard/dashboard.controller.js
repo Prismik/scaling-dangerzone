@@ -36,6 +36,30 @@ var potential = [
         long : -118.2500
     },
     {
+        city : 'Near Toronto',
+        desc : 'This city is live!',
+        lat : 43.7070,
+        long : -79.3000
+    },
+    {
+        city : 'Closer to Toronto',
+        desc : 'This city is live!',
+        lat : 41.7050,
+        long : -79.4020
+    },
+    {
+        city : 'Kinda close Toronto',
+        desc : 'This city is live!',
+        lat : 40.7000,
+        long : -79.9000
+    },
+    {
+        city : 'Fourth',
+        desc : 'This city is live!',
+        lat : 41.7000,
+        long : -80.0000
+    },
+    {
         city : 'Las Vegas',
         desc : 'Sin City...\'nuff said!',
         lat : 36.0800,
@@ -44,293 +68,22 @@ var potential = [
 ]
 
 angular.module('sigApp')
-  .controller('DashboardCtrl', function ($scope) {
-    var infoWindows = [];
-    var mapOptions = {
-        scrollwheel: false,
-        zoom: 4,
-        center: new google.maps.LatLng(40.0000, -98.0000),
-        mapTypeId: 'terrain'
+  .controller('DashboardCtrl', ['$scope', 'GoogleMap', function ($scope, GoogleMap) {
+		GoogleMap.initialize(document.getElementById('map'), document.getElementById('route'), 
+													cities, potential);
+    for (var i = 0; i < cities.length; ++i){
+      GoogleMap.createBlueMarker(cities[i]);
     }
 
-    $scope.directionsService = new google.maps.DirectionsService();
-    $scope.directionsDisplay = new google.maps.DirectionsRenderer();
-    $scope.map = new google.maps.Map(document.getElementById('map'), mapOptions);
-
-    $scope.redMarkers = [];
-    $scope.blueMarkers = [];
-    
-    $scope.directionsDisplay.setMap($scope.map);
-    $scope.directionsDisplay.setOptions( { suppressMarkers: true } );
-    
-    var elevator = new google.maps.ElevationService();
-		var chart = new google.visualization.ColumnChart(document.getElementById('chart'));
-		var polyline;
-
-		// Takes an array of ElevationResult objects, draws the path on the map
-		// and plots the elevation profile on a Visualization API ColumnChart.
-		var plotElevation = function(results, status) {
-		  if (status != google.maps.ElevationStatus.OK) {
-		    return;
-		  }
-		  var elevations = results;
-		  // Extract the elevation samples from the returned results
-		  // and store them in an array of LatLngs.
-		  var elevationPath = [];
-		  for (var i = 0; i < results.length; i++) {
-		    elevationPath.push(elevations[i].location);
-		  }
-
-		  // Display a polyline of the elevation path.
-		  var pathOptions = {
-		    path: elevationPath,
-		    strokeColor: '#0000CC',
-		    opacity: 0.4,
-		    map: $scope.map
-		  }
-		  polyline = new google.maps.Polyline(pathOptions);
-
-		  
-			var data = new google.visualization.DataTable();
-		  // Extract the data from which to populate the chart.
-		  // Because the samples are equidistant, the 'Sample'
-		  // column here does double duty as distance along the
-		  // X axis.
-		  data.addColumn('string', 'Sample');
-		  data.addColumn('number', 'Elevation');
-		  for (var i = 0; i < results.length; i++) {
-		    data.addRow(['', elevations[i].elevation]);
-		  }
-
-		  // Draw the chart using the data within its DIV.
-		  document.getElementById('chart').style.display = 'block';
-		  chart.draw(data, {
-		    height: 150,
-		    legend: 'none',
-		    titleY: 'Elevation (m)',
-		    title: 'Elevation Chart',
-		    titleTextStyle: {
-		    	fontSize: 20,
-		    	bold: true
-		    }
-		  });
-		}
-
-    var calcRoute = function () {
-		  var start = cities[0].lat + "," + cities[0].long;
-		  var end = "toronto, ont"; // TODO how to decide of the end location ?
-		  var waypts = [];
-		  for (var i = 0; i < cities.length; i++) {
-		      waypts.push({ location:cities[i].lat + "," + cities[i].long,
-		          stopover:true });
-		  }
-
-		  for (var i = 0; i < potential.length; i++) {
-		      waypts.push({ location:potential[i].lat + "," + potential[i].long,
-		          stopover:true });
-		  }
-
-		  var request = {
-		      origin: start,
-		      destination: end,
-		      waypoints: waypts,
-		      optimizeWaypoints: true,
-		      travelMode: google.maps.TravelMode.DRIVING
-		  };
-
-		  // Call the direction service and on OK status, print the travel steps
-		  $scope.directionsService.route(request, function(response, status) {
-		    if (status == google.maps.DirectionsStatus.OK) {
-		      $scope.directionsDisplay.setDirections(response);
-		      var route = response.routes[0];
-		      var summaryPanel = document.getElementById('route');
-		      var summary = '<h2>Direction steps</h2><br><table class="table">';
-		      var step = 1;
-		      var lats = [];
-		      // For each route, display summary information.
-		      for (var i = 0; i < route.legs.length; i++) {
-		      	var myRoute = route.legs[i];
-					  for (var j = 0; j < myRoute.steps.length; j++) {
-				     lats.push(new google.maps.LatLng(myRoute.steps[j].start_location.lat(), myRoute.steps[j].start_location.lng()));
-			        summary += '<tr>' + 
-			        	'<td>'+step.toString()+'</td>' +
-			        	'<td>'+myRoute.steps[j].instructions+'</td>' +
-			        	'<td>'+myRoute.steps[j].distance.value+' m</td>' +
-			        '</tr>';
-			        ++step;
-					  }
-		      }
-
-				  var pathRequest = {
-				    'path': lats,
-				    'samples': 256
-				  }
-
-				  elevator.getElevationAlongPath(pathRequest, plotElevation);
-
-		      summary += '</table>'
-		      summaryPanel.innerHTML = summary;
-		    }
-		  });
-		}
-
-   	var RouteControl = function(controlDiv) {
-		  // Set CSS styles for the DIV containing the control
-		  // Setting padding to 5 px will offset the control
-		  // from the edge of the map.
-		  controlDiv.style.padding = '5px';
-
-		  // Set CSS for the control border.
-		  var ui = document.createElement('div');
-		  ui.style.backgroundColor = 'white';
-		  ui.style.borderStyle = 'solid';
-		  ui.style.borderWidth = '2px';
-		  ui.style.cursor = 'pointer';
-		  ui.style.textAlign = 'center';
-		  ui.title = 'Click to set the map to Home';
-		  controlDiv.appendChild(ui);
-
-		  // Set CSS for the control interior.
-		  var text = document.createElement('div');
-		  text.style.fontFamily = 'Arial,sans-serif';
-		  text.style.fontSize = '12px';
-		  text.style.paddingLeft = '4px';
-		  text.style.paddingRight = '4px';
-		  text.innerHTML = '<strong>Calculate route</strong>';
-		  ui.appendChild(text);
-
-		  google.maps.event.addDomListener(ui, 'click', function() {
-		  	calcRoute();
-		  });
-		}
-
-		// Create a DIV and pass it the Route Calculation Control
-	  var routeControlDiv = document.createElement('div');
-	  var routeControl = new RouteControl(routeControlDiv);
-
-	  routeControlDiv.index = 1;
-	  $scope.map.controls[google.maps.ControlPosition.TOP_RIGHT].push(routeControlDiv);
-
-    var feedClientInfo = function(info) {
-    	var popup = '<form role="form" style="width: 400px">' +
-        '<div class="row">' +
-	        '<div class="col-md-6">' +
-					  '<div class="form-group">' +
-					    '<label for="title">Title</label>' +
-					    '<input type="text" class="form-control" id="title" ' +
-					    			 'placeholder="Enter title..." value="' + info.city + '">' +
-					  '</div>' +
-					  '<select class="form-control">...</select>' +
-					  '<div class="form-group">' +
-					    '<label for="desc">Description</label>' +
-					    '<br>' +
-					    '<textarea class="form-control" style="resize: none;" id="desc" rows="5" cols="25">' +
-					    info.desc +
-					    '</textarea>' +
-					 	'</div>' +
-					'</div>' +
-					'<div class="col-md-6">' +
-						'<div class="form-group">' +
-					    '<label for="article">Article</label>' +
-					    '<input type="text" class="form-control" id="article" ' +
-					    			 'placeholder="Article..." value="' + info.article + '">' +
-					  '</div>' +
-					  '<div class="form-group">' +
-					    '<label for="estimate">Estimated time</label>' +
-					    '<input type="text" class="form-control" id="estimate" ' +
-					    			 'placeholder="Enter estimate..." value="' + info.et + '">' +
-					  '</div>' +
-				  	'<button type="submit" class="btn btn-default">Submit</button>' +
-					'</div>' +
-				'</div>' +
-				'</form>';
-
-				return popup;
-    }
-
-    var feedPotentialInfo = function(info) {
-    	var popup = '<form role="form" style="width: 400px">' +
-        '<div class="row">' +
-	        '<div class="col-md-6">' +
-					  '<div class="form-group">' +
-					    '<label for="title">Title</label>' +
-					    '<input type="text" class="form-control" id="title" placeholder="Enter title...">' +
-					  '</div>' +
-					  '<select class="form-control">Decision...</select>' +
-					  '<div class="form-group">' +
-					    '<label for="desc">Description</label>' +
-					    '<br>' +
-					    '<textarea class="form-control" style="resize: none;" id="desc" rows="5" cols="25">' +
-					    '</textarea>' +
-					 	'</div>' +
-					'</div>' +
-					'<div class="col-md-6">' +
-						'<div class="form-group">' +
-					    '<label for="agent">Marketing agent</label>' +
-					    '<input type="text" class="form-control" id="agent" placeholder="Marketing agent...">' +
-					  '</div>' +
-					  '<div class="form-group">' +
-					    '<label for="spent">Spent time</label>' +
-					    '<input type="text" class="form-control" id="spent" placeholder="Enter spent time...">' +
-					  '</div>' +
-				  	'<button type="submit" class="btn btn-default">Submit</button>' +
-					'</div>' +
-				'</div>' +
-				'</form>';
-
-				return popup;
-    }
-
-    var createBlueMarker = function(info) {
-        var marker = new google.maps.Marker({
-        		icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            map: $scope.map,
-            position: new google.maps.LatLng(info.lat, info.long),
-            title: info.city,
-            content: '<div class="infoWindowContent">' + info.desc + '</div>'
-        });
-        $scope.blueMarkers.push(marker);
-
-        var infoWindow = new google.maps.InfoWindow({ content: feedClientInfo(info) });
-        infoWindows.push(infoWindow);
-        google.maps.event.addListener(marker, 'click', function() {
-        	for (var i = 0; i < infoWindows.length; i++) {
-			      infoWindows[i].close();
-			    }
-			    infoWindow.open($scope.map,marker);
-			  });
-    }
-    
-    var createRedMarker = function(info) {
-        var marker = new google.maps.Marker({
-        		icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-            map: $scope.map,
-            position: new google.maps.LatLng(info.lat, info.long),
-            title: info.city,
-            content: '<div class="infoWindowContent">' + info.desc + '</div>'
-        });
-        $scope.redMarkers.push(marker);
-        
-        var infoWindow = new google.maps.InfoWindow({ content: feedPotentialInfo(info) });
-        infoWindows.push(infoWindow);
-        google.maps.event.addListener(marker, 'click', function() {
-        	for (var i = 0; i < infoWindows.length; i++) {
-			      infoWindows[i].close();
-			    }
-			    infoWindow.open($scope.map,marker);
-			  });
-    }
-
-    for (var i = 0; i < cities.length; i++){
-        createBlueMarker(cities[i]);
-    }
-
-    for (var i = 0; i < potential.length; i++){
-        createRedMarker(potential[i]);
-    }
-
+    for (var j = 0; j < potential.length; ++j){
+      GoogleMap.createRedMarker(potential[j]);
+    }  
+    $scope.redMarkers = GoogleMap.redMarkers;
+    $scope.blueMarkers = GoogleMap.blueMarkers;
     $scope.openInfoWindow = function(e, selectedMarker){
         e.preventDefault();
         google.maps.event.trigger(selectedMarker, 'click');
     }
-  });
+    
+		
+  }]);

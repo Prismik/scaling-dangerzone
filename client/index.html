@@ -23,6 +23,7 @@
     <!-- Google Maps Dependency -->
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
     <script>
       google.load("visualization", "1", {packages: ['columnchart']});
     </script>
@@ -66,6 +67,7 @@
         <!-- build:js({.tmp,client}) app/app.js -->
         <script src="app/app.js"></script>
           <!-- injector:js -->
+          <script src="app/GoogleMap/GoogleMap.service.js"></script>
           <script src="app/account/account.js"></script>
           <script src="app/account/login/login.controller.js"></script>
           <script src="app/account/settings/settings.controller.js"></script>
