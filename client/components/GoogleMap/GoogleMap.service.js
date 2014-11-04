@@ -6,12 +6,16 @@ angular.module('sigApp')
     var secondStore = new google.maps.LatLng(40.7000 , -79.9000);
     var map = null;
     var routePanel = null;
-    var redMarkers = [];
-    var blueMarkers = [];
-    var infoWindows = [];
+    var redMarkers;
+    var blueMarkers;
+    var infoWindows;
+
+    var selectedMarkers;
+    var previousMarker = null;
 
     var directionsService = new google.maps.DirectionsService();
     var directionsDisplay = new google.maps.DirectionsRenderer();
+    var geocoder;
 
     var elevator = new google.maps.ElevationService();
     var chart = new google.visualization.ColumnChart(document.getElementById('chart'));
@@ -25,18 +29,33 @@ angular.module('sigApp')
     }
 
 
-    var initialize = function(mapDiv, routeDiv, cities, potential) {
+    var initialize = function(mapDiv, routeDiv, potential, cities) {
+      redMarkers = [];
+      blueMarkers = [];
+      infoWindows = [];
+      selectedMarkers = [];
+      previousMarker = null;
+
       map = new google.maps.Map(mapDiv, mapOptions);
       routePanel = routeDiv;
       directionsDisplay.setMap(map);
       directionsDisplay.setOptions( { suppressMarkers: true } );  
+      geocoder = new google.maps.Geocoder();
 
       // Create a DIV and pass it the Route Calculation Control
       var routeControlDiv = document.createElement('div');
-      var routeControl = new RouteControl(routeControlDiv, cities, potential);
+      var routeControl = new RouteControl(routeControlDiv, selectedMarkers, potential);
 
       routeControlDiv.index = 1;
       map.controls[google.maps.ControlPosition.TOP_RIGHT].push(routeControlDiv);
+    
+      for (var i = 0; i < cities.length; ++i){
+        createBlueMarker(cities[i]);
+      }
+
+      for (var j = 0; j < potential.length; ++j){
+        createRedMarker(potential[j]);
+      }  
     }
 
     var RouteControl = function(controlDiv, cities, potential) {
@@ -130,6 +149,17 @@ angular.module('sigApp')
 
       summary += '</table>'
       routePanel.innerHTML = summary;
+    }
+
+    // Returns null if Status is not OK
+    var addrToLatLng = function (address, callback) {
+      geocoder.geocode( { 'address': address }, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          callback(results[0].geometry.location);
+        } else {
+          callback(null);
+        }
+      });
     }
 
     var selectOptimalRoute = function(requestA, requestB) {
@@ -260,24 +290,25 @@ angular.module('sigApp')
           '<div class="col-md-6">' +
             '<div class="form-group">' +
               '<label for="title">Title</label>' +
-              '<input type="text" class="form-control" id="title" placeholder="Enter title...">' +
+              '<input type="text" class="form-control" id="title" value="' + info.city +'" placeholder="Enter title...">' +
             '</div>' +
             '<select class="form-control">Decision...</select>' +
             '<div class="form-group">' +
               '<label for="desc">Description</label>' +
               '<br>' +
               '<textarea class="form-control" style="resize: none;" id="desc" rows="5" cols="25">' +
+              info.desc +
               '</textarea>' +
             '</div>' +
           '</div>' +
           '<div class="col-md-6">' +
             '<div class="form-group">' +
               '<label for="agent">Marketing agent</label>' +
-              '<input type="text" class="form-control" id="agent" placeholder="Marketing agent...">' +
+              '<input type="text" class="form-control" id="agent" value="' + info.agent +'" placeholder="Marketing agent...">' +
             '</div>' +
             '<div class="form-group">' +
               '<label for="spent">Spent time</label>' +
-              '<input type="text" class="form-control" id="spent" placeholder="Enter spent time...">' +
+              '<input type="text" class="form-control" id="spent" value="' + info.et + '" placeholder="Enter spent time...">' +
             '</div>' +
             '<button type="submit" class="btn btn-default">Submit</button>' +
           '</div>' +
@@ -326,6 +357,23 @@ angular.module('sigApp')
       });
     }
 
+    var openInfoWindow = function(e, selectedMarker){
+        e.preventDefault();
+        selectedMarker.infoWindow.close();
+
+        previousMarker = selectedMarker;
+        if (selectedMarkers.indexOf(selectedMarker) > -1)
+            selectedMarkers.splice(selectedMarkers.indexOf(selectedMarker), 1);
+        else {
+            selectedMarkers.push(selectedMarker);
+            google.maps.event.trigger(selectedMarker, 'click');
+        }
+    }
+
+    var isMarkerSelected = function(marker) {
+      return selectedMarkers.indexOf(marker) > -1;
+    }
+
     // Public API here
     return {
       initialize: initialize,
@@ -333,7 +381,10 @@ angular.module('sigApp')
       createBlueMarker: createBlueMarker,
       createRedMarker: createRedMarker,
       map: map,
-      redMarkers: redMarkers,
-      blueMarkers: blueMarkers
+      redMarkers: function(){ return redMarkers; },
+      blueMarkers: function(){ return blueMarkers; },
+      openInfoWindow: openInfoWindow,
+      isMarkerSelected: isMarkerSelected,
+      addrToLatLng: addrToLatLng
     };
   });

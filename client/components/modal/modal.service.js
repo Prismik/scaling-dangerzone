@@ -12,11 +12,22 @@ angular.module('sigApp')
       var modalScope = $rootScope.$new();
       scope = scope || {};
       modalClass = modalClass || 'modal-default';
-
       angular.extend(modalScope, scope);
 
       return $modal.open({
         templateUrl: 'components/modal/modal.html',
+        windowClass: modalClass,
+        scope: modalScope
+      });
+    }
+
+    function openForm(modalScope, scope, modalClass) {
+      scope = scope || {};
+      modalClass = modalClass || 'modal-default';
+      angular.extend(modalScope, scope);
+
+      return $modal.open({
+        templateUrl: 'components/modal/modalForm.html',
         windowClass: modalClass,
         scope: modalScope
       });
@@ -71,6 +82,51 @@ angular.module('sigApp')
               del.apply(event, args);
             });
           };
+        }
+      },
+      /* Form modals */
+      form : {
+        add: function(add) {
+          add = add || angular.noop;
+
+          return function() {
+            var args = Array.prototype.slice.call(arguments),
+                modalClass = args.shift(),
+                name = args.shift(),
+                addModal;
+
+
+            var modalScope = $rootScope.$new();
+            modalScope.form = { };
+            for (var i = 0; i != args.length; ++i) {
+              modalScope.form[args[i]] = '';
+            }
+            addModal = openForm(modalScope, {
+              modal: {
+                dismissable: true,
+                title: 'Add ' + name + "...",
+                fields: args,
+                buttons: [{
+                  classes: 'btn-success',
+                  text: 'Add',
+                  click: function(e) {
+                    addModal.close(e);
+                  }
+                }, {
+                  classes: 'btn-default',
+                  text: 'Cancel',
+                  click: function(e) {
+                    addModal.dismiss(e);
+                  }
+                }],
+              }
+            }, modalClass);
+
+            addModal.result.then(function() {
+              var arr = modalScope.form;
+              add.call(undefined, arr);
+            });
+          }
         }
       }
     };
