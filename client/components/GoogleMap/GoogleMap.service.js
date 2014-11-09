@@ -60,6 +60,9 @@ angular.module('sigApp')
       for (var j = 0; j < potential.length; ++j){
         createRedMarker(potential[j]);
       }  
+
+      createYellowMarker({location: firstStore, name:'First Store'});
+      createYellowMarker({location: secondStore, name:'Second Store'});
     }
 
     /*
@@ -278,6 +281,29 @@ angular.module('sigApp')
     }
     
     /*
+    * Creates a yellow marker that is related to the stores.
+    * @info: The store info
+    */
+    var createYellowMarker = function(info) {
+    	var infoWindow = new google.maps.InfoWindow({ content: '<div>'+info.name+'</div>' });
+
+      var marker = new google.maps.Marker({
+          icon: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+          map: map,
+          position: new google.maps.LatLng(info.location.lat(), info.location.lng()),
+          title: info.name,
+          content: '<div class="infoWindowContent">' + info.name + '</div>',
+          infoWindow: infoWindow
+      });
+      google.maps.event.addListener(marker, 'click', function() {
+        for (var i = 0; i < infoWindows.length; i++) {
+          infoWindows[i].close();
+        }
+        infoWindow.open(map,marker);
+      });
+    }
+
+    /*
     * Creates a red marker that is related to a new potential client. The
     * marker will hold all the potential client information and so will be used
     * for data updates.
@@ -297,7 +323,7 @@ angular.module('sigApp')
           info: info
       });
       redMarkers.push(marker);
-      
+
       google.maps.event.addListener(infoWindow, 'domready', function() {
 			    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
 			        e.preventDefault();
