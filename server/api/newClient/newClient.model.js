@@ -5,8 +5,13 @@ var mongoose = require('mongoose'),
 
 var NewclientSchema = new Schema({
   name: String,
-  info: String,
-  active: Boolean
+  address: String,
+  description: String,
+  estimatedTime: Number,
+  agent: String,
+  decision: String,
+  lat: Number,
+  lng: Number
 });
 
 module.exports = mongoose.model('Newclient', NewclientSchema);

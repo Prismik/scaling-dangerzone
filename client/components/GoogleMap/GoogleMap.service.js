@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sigApp')
-  .factory('GoogleMap', function ($rootScope) {
+  .factory('GoogleMap', function ($rootScope, $http, $route) {
     var firstStore = new google.maps.LatLng(43.7000 , -79.4000);
     var secondStore = new google.maps.LatLng(40.7000 , -79.9000);
     var map = null;
@@ -106,12 +106,12 @@ angular.module('sigApp')
     var prepareRequest = function(start, end, cities, potential) {
       var waypts = [];
       for (var i = 0; i < cities.length; i++) {
-          waypts.push({ location:cities[i].info.lat + "," + cities[i].info.long, stopover:true });
+          waypts.push({ location:cities[i].info.lat + "," + cities[i].info.lng, stopover:true });
       }
 
       var potWpts = [];
       for (var i = 0; i < potential.length; i++) {
-        var curLatLng = new google.maps.LatLng(potential[i].lat , potential[i].long);
+        var curLatLng = new google.maps.LatLng(potential[i].lat , potential[i].lng);
         potWpts.push({ 
           potential: potential[i], 
           distance: google.maps.geometry.spherical.computeDistanceBetween(secondStore, curLatLng)
@@ -122,7 +122,7 @@ angular.module('sigApp')
         return (a.distance > b.distance) ? 1 : ((b.distance > a.distance) ? -1 : 0);
       });
       for (var i = 0; i < potWpts.slice(0, 4).length; i++) {
-        waypts.push({ location:potWpts[i].potential.lat + "," + potWpts[i].potential.long, stopover:true });
+        waypts.push({ location:potWpts[i].potential.lat + "," + potWpts[i].potential.lng, stopover:true });
       }
 
       return {
@@ -248,14 +248,27 @@ angular.module('sigApp')
       var marker = new google.maps.Marker({
           icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
           map: map,
-          position: new google.maps.LatLng(info.lat, info.long),
-          title: info.city,
-          content: '<div class="infoWindowContent">' + info.desc + '</div>',
+          position: new google.maps.LatLng(info.lat, info.lng),
+          title: info.name,
+          content: '<div class="infoWindowContent">' + info.description + '</div>',
           infoWindow: infoWindow,
           info: info
       });
       blueMarkers.push(marker);
       
+      google.maps.event.addListener(infoWindow, 'domready', function() {
+			    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
+			        e.preventDefault();
+			        var client = {
+			        	name: document.getElementById('name').value,
+			        	description: document.getElementById('description').value,
+			        	article: document.getElementById('article').value,
+			        	estimatedTime: document.getElementById('estimate').value
+			        };
+			        $http.put('/api/clients/' + info._id, client);
+			        $route.reload();
+			    });
+			});
       google.maps.event.addListener(marker, 'click', function() {
         for (var i = 0; i < infoWindows.length; i++) {
           infoWindows[i].close();
@@ -277,14 +290,28 @@ angular.module('sigApp')
       var marker = new google.maps.Marker({
           icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
           map: map,
-          position: new google.maps.LatLng(info.lat, info.long),
-          title: info.city,
-          content: '<div class="infoWindowContent">' + info.desc + '</div>',
+          position: new google.maps.LatLng(info.lat, info.lng),
+          title: info.name,
+          content: '<div class="infoWindowContent">' + info.description + '</div>',
           infoWindow: infoWindow,
           info: info
       });
       redMarkers.push(marker);
-
+      
+      google.maps.event.addListener(infoWindow, 'domready', function() {
+			    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
+			        e.preventDefault();
+			        var client = {
+			        	name: document.getElementById('name').value,
+			        	agent: document.getElementById('agent').value,
+			        	description: document.getElementById('description').value,
+			        	decision: document.getElementById('decision').value,
+			        	estimatedTime: document.getElementById('spent').value
+			        };
+			        $http.put('/api/newClients/' + info._id, client);
+			        $route.reload();
+			    });
+			});
       google.maps.event.addListener(marker, 'click', function() {
         for (var i = 0; i < infoWindows.length; i++) {
           infoWindows[i].close();
@@ -298,20 +325,19 @@ angular.module('sigApp')
     * @info: The clients info
     */
     var feedClientInfo = function(info) {
-      var popup = '<form role="form" style="width: 400px">' +
+      var popup = '<form role="form" style="width: 400px" id="' + info.name + '-form">' +
         '<div class="row">' +
           '<div class="col-md-6">' +
             '<div class="form-group">' +
-              '<label for="title">Title</label>' +
-              '<input type="text" class="form-control" id="title" ' +
-                     'placeholder="Enter title..." value="' + info.city + '">' +
+              '<label for="name">Title</label>' +
+              '<input type="text" class="form-control" id="name" ' +
+                     'placeholder="Enter title..." value="' + info.name + '">' +
             '</div>' +
-            '<select class="form-control">...</select>' +
             '<div class="form-group">' +
-              '<label for="desc">Description</label>' +
+              '<label for="description">Description</label>' +
               '<br>' +
-              '<textarea class="form-control" style="resize: none;" id="desc" rows="5" cols="25">' +
-              info.desc +
+              '<textarea class="form-control" style="resize: none;" id="description" rows="5" cols="25">' +
+              info.description +
               '</textarea>' +
             '</div>' +
           '</div>' +
@@ -324,7 +350,7 @@ angular.module('sigApp')
             '<div class="form-group">' +
               '<label for="estimate">Estimated time</label>' +
               '<input type="text" class="form-control" id="estimate" ' +
-                     'placeholder="Enter estimate..." value="' + info.et + '">' +
+                     'placeholder="Enter estimate..." value="' + info.estimatedTime + '">' +
             '</div>' +
             '<button type="submit" class="btn btn-default">Submit</button>' +
           '</div>' +
@@ -334,24 +360,31 @@ angular.module('sigApp')
       return popup;
     }
 
+    var test = function() {
+  		console.log('test');
+  	}
     /*
     * Feeds the client info into the google maps markers
     * @info: The clients info
     */
     var feedPotentialInfo = function(info) {
-      var popup = '<form role="form" style="width: 400px">' +
+      var popup = '<form role="form" style="width: 400px" id="' + info.name + '-form">' +
         '<div class="row">' +
           '<div class="col-md-6">' +
             '<div class="form-group">' +
-              '<label for="title">Title</label>' +
-              '<input type="text" class="form-control" id="title" value="' + info.city +'" placeholder="Enter title...">' +
+              '<label for="name">Title</label>' +
+              '<input type="text" class="form-control" id="name" value="' + info.name +'" placeholder="Enter title...">' +
             '</div>' +
-            '<select class="form-control">Decision...</select>' +
+            '<select class="form-control" id="decision">' +
+						  '<option value="acc">Accepted</option>' +
+						  '<option value="ref">Refused</option>' +
+						  '<option value="wait">Waiting</option>' +
+            '</select>' +
             '<div class="form-group">' +
-              '<label for="desc">Description</label>' +
+              '<label for="description">Description</label>' +
               '<br>' +
-              '<textarea class="form-control" style="resize: none;" id="desc" rows="5" cols="25">' +
-              info.desc +
+              '<textarea class="form-control" style="resize: none;" id="description" rows="5" cols="25">' +
+              info.description +
               '</textarea>' +
             '</div>' +
           '</div>' +
@@ -362,7 +395,7 @@ angular.module('sigApp')
             '</div>' +
             '<div class="form-group">' +
               '<label for="spent">Spent time</label>' +
-              '<input type="text" class="form-control" id="spent" value="' + info.et + '" placeholder="Enter spent time...">' +
+              '<input type="text" class="form-control" id="spent" value="' + info.estimatedTime + '" placeholder="Enter spent time...">' +
             '</div>' +
             '<button type="submit" class="btn btn-default">Submit</button>' +
           '</div>' +
@@ -453,6 +486,7 @@ angular.module('sigApp')
       blueMarkers: function(){ return blueMarkers; },
       openInfoWindow: openInfoWindow,
       isMarkerSelected: isMarkerSelected,
-      addrToLatLng: addrToLatLng
+      addrToLatLng: addrToLatLng,
+      test: test
     };
   });

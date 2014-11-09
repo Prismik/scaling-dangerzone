@@ -8,7 +8,9 @@ var ClientSchema = new Schema({
   address: String,
   description: String,
   estimatedTime: Number,
-  article: String
+  article: String,
+  lat: Number,
+  lng: Number
 });
 
 module.exports = mongoose.model('Client', ClientSchema);

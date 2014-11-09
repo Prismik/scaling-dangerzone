@@ -19,7 +19,7 @@
 				    </span>
 			    </a>
 				  <a ng-repeat-end=""></a>
-				  <a href="/dashboard" class="list-group-item list-group-item-info" ng-click="addClient('modal-info', 'Client', 'Address', 'Description', 'Article')">Add...</a>
+				  <a href="/dashboard" class="list-group-item list-group-item-info" ng-click="addClient('modal-info', 'Client', 'Name', 'Address', 'Description', 'Article')">Add...</a>
 				</div>
 			</div>
 			
@@ -28,7 +28,7 @@
 				  <a class="list-group-item active list-group-item-danger">Potential Clients</a>
 				  <a ng-repeat-start="marker in redMarkers | orderBy : 'title'" href="#" class="list-group-item" ng-click="openInfoWindow($event, marker)">{{marker.title}}</a>
 				  <a ng-repeat-end=""></a>
-				  <a href="/dashboard" class="list-group-item list-group-item-info" ng-click="addNewClient('modal-danger', 'New Client', 'Address', 'Description', 'Agent')">Add...</a>
+				  <a href="/dashboard" class="list-group-item list-group-item-info" ng-click="addNewClient('modal-danger', 'New Client', 'Name', 'Address', 'Description', 'Agent')">Add...</a>
 				</div>
 			</div>
 		</div>
