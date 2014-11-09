@@ -1,3 +1,20 @@
+<div ng-include="'components/navbar/navbar.html'"></div>
 <div class="col-md-12">
-This is the statistics view.
+	<h1>Statistics</h1>
+
+	<div ng-app="sigApp">
+		<div> 
+			<div class="list-group">
+			  <a class="list-group-item active" tooltip="Select the route for which to generate statistics.">
+			  Routes
+			  <span class="pull-right glyphicon glyphicon-info-sign"></span>
+			  </a>
+			  <a ng-repeat-start="route in routes" href="/statistics" class="list-group-item">
+			  	{{route.title}} 
+		    </a>
+			  <a ng-repeat-end=""></a>
+			</div>
+		</div>
+	</div>
+
 </div>

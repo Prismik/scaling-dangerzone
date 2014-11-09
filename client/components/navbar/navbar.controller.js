@@ -8,6 +8,9 @@ angular.module('sigApp')
     }, {
       'title': 'Dashboard',
       'link': '/dashboard'
+    }, {
+    	'title': 'Statistics',
+    	'link': '/statistics'
     }];
 
     $scope.isCollapsed = true;

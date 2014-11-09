@@ -28,7 +28,11 @@ angular.module('sigApp')
         mapTypeId: 'terrain'
     }
 
-
+    /*
+    * Initialize required data for the google maps object, along with
+    * the markers, elevation device, directions device and any Google API
+    * components.
+    */
     var initialize = function(mapDiv, routeDiv, potential, cities) {
       redMarkers = [];
       blueMarkers = [];
@@ -58,6 +62,10 @@ angular.module('sigApp')
       }  
     }
 
+    /*
+		* Creates the control required to calculate the optimal route.
+		* This button will be set on the google Maps.
+		*/
     var RouteControl = function(controlDiv, cities, potential) {
       // Set CSS styles for the DIV containing the control
       // Setting padding to 5 px will offset the control
@@ -88,6 +96,13 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Prepares a direction request and returns it in a json with the Google API Format.
+    * @start: The start point for the route
+    * @end: The end point for the route
+    * @cities: The clients list for the deliveries
+    * @potential: The potential clients list.
+    */
     var prepareRequest = function(start, end, cities, potential) {
       var waypts = [];
       for (var i = 0; i < cities.length; i++) {
@@ -119,6 +134,10 @@ angular.module('sigApp')
       };
     }
 
+    /*
+    * Prints the route summary in the proper DIV.
+    * @reponse: The directions response from a google directions request.
+    */
     var printRouteSummary = function(response) {
       directionsDisplay.setDirections(response);
       var route = response.routes[0];
@@ -151,7 +170,12 @@ angular.module('sigApp')
       routePanel.innerHTML = summary;
     }
 
-    // Returns null if Status is not OK
+    /*
+    * Translates an address to a LatLng object using the google Geocoder
+    * @callback: The callback function
+    * @address: The address to translate to lattitude/longitude
+    * @remarks: Returns null if status is not OK.
+    */
     var addrToLatLng = function (address, callback) {
       geocoder.geocode( { 'address': address }, function(results, status) {
         if (status == google.maps.GeocoderStatus.OK) {
@@ -162,6 +186,11 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Selects the optimal route between both provided as a directions request
+    * @requestA: The first request
+    * @requestB: The second request
+    */
     var selectOptimalRoute = function(requestA, requestB) {
       var totalA = 0;
       var totalB = 0;
@@ -189,6 +218,11 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Calculates the optimal route from a set list of clients.
+    * @cities: The clients list for the delivery
+    * @potential: The potential clients list
+    */
     var calcRoute = function (cities, potential) {
       for (var i = 0; i < infoWindows.length; i++) {
         infoWindows[i].close();
@@ -201,6 +235,12 @@ angular.module('sigApp')
       selectOptimalRoute(requestA, requestB);
     }
 
+    /*
+    * Creates a blue marker that is related to a delivery client. The
+    * marker will hold all the client information and so will be used
+    * for data updates.
+    * @info: The client info
+    */
     var createBlueMarker = function(info) {
       var infoWindow = new google.maps.InfoWindow({ content: feedClientInfo(info) });
       infoWindows.push(infoWindow);
@@ -224,6 +264,12 @@ angular.module('sigApp')
       });
     }
     
+    /*
+    * Creates a red marker that is related to a new potential client. The
+    * marker will hold all the potential client information and so will be used
+    * for data updates.
+    * @info: The potential client info
+    */
     var createRedMarker = function(info) {
       var infoWindow = new google.maps.InfoWindow({ content: feedPotentialInfo(info) });
       infoWindows.push(infoWindow);
@@ -247,6 +293,10 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Feeds the client info into the google maps markers
+    * @info: The clients info
+    */
     var feedClientInfo = function(info) {
       var popup = '<form role="form" style="width: 400px">' +
         '<div class="row">' +
@@ -284,6 +334,10 @@ angular.module('sigApp')
       return popup;
     }
 
+    /*
+    * Feeds the client info into the google maps markers
+    * @info: The clients info
+    */
     var feedPotentialInfo = function(info) {
       var popup = '<form role="form" style="width: 400px">' +
         '<div class="row">' +
@@ -318,8 +372,12 @@ angular.module('sigApp')
       return popup;
     }
 
-    // Takes an array of ElevationResult objects, draws the path on the map
-    // and plots the elevation profile on a Visualization API ColumnChart.
+    /*
+    * Takes an array of ElevationResult objects, draws the path on the map
+    * and plots the elevation profile on a Visualization API ColumnChart.
+    * @results: The results from the elevation API
+    * @status: The status of the request, wether it worked or not
+    */
     var plotElevation = function(results, status) {
       if (status != google.maps.ElevationStatus.OK) {
         return;
@@ -357,6 +415,12 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Opens an info window at the location of a given marker, showing it's 
+    * embeded data as well.
+    * @e: The event
+    * @selectedMarket: The marker for which to show the info window.
+    */
     var openInfoWindow = function(e, selectedMarker){
         e.preventDefault();
         selectedMarker.infoWindow.close();
@@ -370,6 +434,10 @@ angular.module('sigApp')
         }
     }
 
+    /*
+    * Determines wether a marker is selected or not
+    * @market: The marker to test
+    */
     var isMarkerSelected = function(marker) {
       return selectedMarkers.indexOf(marker) > -1;
     }
