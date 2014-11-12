@@ -1,5 +1,10 @@
 <div ng-include="'components/navbar/navbar.html'"></div>
 <div class="col-md-12">
+	<div class="pull-right">
+		<b>Select date</b>
+		<input type="date" name="bday" ng-model="date">
+		<button class="btn btn-default" ng-click="selectDate()">Confirm</button>
+	</div>
 	<h1>Dashboard</h1>
 	
 	<div ng-app="sigApp">

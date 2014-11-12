@@ -20,6 +20,15 @@ exports.show = function(req, res) {
   });
 };
 
+// Get a single ride by date
+exports.showByDate = function(req, res) {
+  Ride.findOne({date:req.params.date}, function (err, ride) {
+    if(err) { return handleError(res, err); }
+    if(!ride) { return res.send(404); }
+    return res.json(ride);
+  });
+};
+
 // Creates a new ride in the DB.
 exports.create = function(req, res) {
   Ride.create(req.body, function(err, ride) {

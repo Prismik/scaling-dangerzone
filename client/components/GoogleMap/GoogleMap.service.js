@@ -4,6 +4,9 @@ angular.module('sigApp')
   .factory('GoogleMap', function ($rootScope, $http, $route) {
     var firstStore = new google.maps.LatLng(43.7000 , -79.4000);
     var secondStore = new google.maps.LatLng(40.7000 , -79.9000);
+    
+    var date = null;
+
     var map = null;
     var routePanel = null;
     var redMarkers;
@@ -12,6 +15,8 @@ angular.module('sigApp')
 
     var selectedMarkers;
     var previousMarker = null;
+
+    var routeCtrl = null;
 
     var directionsService = new google.maps.DirectionsService();
     var directionsDisplay = new google.maps.DirectionsRenderer();
@@ -97,6 +102,8 @@ angular.module('sigApp')
       google.maps.event.addDomListener(ui, 'click', function() {
         calcRoute(cities, potential);
       });
+
+      routeCtrl = ui;
     }
 
     /*
@@ -197,11 +204,27 @@ angular.module('sigApp')
     var selectOptimalRoute = function(requestA, requestB) {
       var totalA = 0;
       var totalB = 0;
+      var legsA = [];
+      var legsB = [];
       directionsService.route(requestA, function(responseA, status) {
         if (status == google.maps.DirectionsStatus.OK) {
           var route = responseA.routes[0];
           for (var i = 0; i < route.legs.length; i++) {
             totalA += route.legs[i].distance.value;
+            var steps = [];
+            for (var j = 0; j < route.legs[i].steps.length; j++) {
+            	steps.push({
+			          lat: route.legs[i].steps[j].start_location.lat(),
+			          lng: route.legs[i].steps[j].start_location.lng(),
+			          instruction: route.legs[i].steps[j].instructions,
+			          distance: route.legs[i].steps[j].distance.value
+			        });
+		        }
+
+            legsA.push({
+            	distance: route.legs[i].distance.value,
+            	steps: steps
+            });
           }
 
           directionsService.route(requestB, function(responseB, status) {
@@ -209,16 +232,83 @@ angular.module('sigApp')
               var route = responseB.routes[0];
               for (var i = 0; i < route.legs.length; i++) {
                 totalB += route.legs[i].distance.value;
+
+                legsB.push({
+		            	distance: route.legs[i].distance.value,
+		            	steps: route.legs[i].steps
+		            });
               }
 
-              if (totalA < totalB)
+              if (totalA < totalB){
                 printRouteSummary(responseA);
-              else 
-                printRouteSummary(responseB);
+                saveRoute(legsA);
+              }
+              else {
+              	printRouteSummary(responseB);
+                saveRoute(legsB);
+              }
             }
           });
         }
       });
+    }
+
+    var feedRoute = function() {
+    	$http.get('/api/rides/date/'+date, route).success(function(ride) {
+  			/*var selected = [];
+  			for (var i = 0; i != ride.selected.length; ++i){
+  				selected.push(ride.selected[i]);
+  			} 
+			
+  			selected = selected.substring(0, selected.length - 1);*/
+  			
+    		/*$http({
+    			method:'GET',
+    			url: '/api/clients/ids/',
+    			params: {
+    				id: JSON.stringify(ride.selected)
+    			}
+    		})*/
+    		$http.get('/api/clients/ids/'+ride.selected).success(function(clients) {
+    			for(var i = 0; i != clients.length; ++i) {
+    				for(var j = 0; j != blueMarkers.length; ++j) {
+    					if (blueMarkers[j].info._id == clients[i]._id)
+    						selectedMarkers.push(blueMarkers[j]);
+    				}
+    			}
+
+    			google.maps.event.trigger(routeCtrl, 'click');
+    		}).error(function(error) {
+
+    		});
+    	}).error(function(error) {
+    		console.log('No route for this date.');
+    	});
+    }
+
+    var saveRoute = function(legs) {
+    	$http.get('/api/users/me').success(function(client) {
+    		var selected = [];
+    		for (var i = 0; i != selectedMarkers.length; ++i) {
+    			selected.push(selectedMarkers[i].info._id);
+    		}
+
+    		console.log(selected);
+    		console.log(client);
+	    	var route = {
+	    		date: date,
+	    		user: client._id,
+	    		selected: selected,
+	    		route: legs
+	    	};
+
+	    	$http.get('/api/rides/date/'+date, route).success(function(ride) {
+	    		$http.put('/api/rides/' + ride._id, route);
+	    	}).error(function(error) {
+	    		console.log('error');
+	    		$http.post('/api/rides', route);
+	    	});
+	    });
     }
 
     /*
@@ -386,9 +476,6 @@ angular.module('sigApp')
       return popup;
     }
 
-    var test = function() {
-  		console.log('test');
-  	}
     /*
     * Feeds the client info into the google maps markers
     * @info: The clients info
@@ -513,6 +600,9 @@ angular.module('sigApp')
       openInfoWindow: openInfoWindow,
       isMarkerSelected: isMarkerSelected,
       addrToLatLng: addrToLatLng,
-      test: test
+      setDate: function(d){ 
+      	date = d;
+      	feedRoute();
+      }
     };
   });

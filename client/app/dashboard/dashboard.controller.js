@@ -13,6 +13,20 @@ angular.module('sigApp')
 		});
   });
 
+  var today = new Date();
+  var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+
+	if(dd<10)
+	  dd='0'+dd
+
+	if(mm<10)
+	  mm='0'+mm
+
+	$scope.date = yyyy+'-'+mm+'-'+dd;
+	GoogleMap.setDate($scope.date);
+	
   $scope.isMarkerSelected = function(marker) {
     return GoogleMap.isMarkerSelected(marker);
   }
@@ -69,4 +83,9 @@ angular.module('sigApp')
 	    }
     });
   });
+
+  $scope.selectDate = function() {
+ 		GoogleMap.setDate($scope.date);
+  }
+
  }]);
