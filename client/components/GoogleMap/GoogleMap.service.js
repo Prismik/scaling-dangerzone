@@ -53,7 +53,7 @@ angular.module('sigApp')
 
       // Create a DIV and pass it the Route Calculation Control
       var routeControlDiv = document.createElement('div');
-      var routeControl = new RouteControl(routeControlDiv, selectedMarkers, potential);
+      var routeControl = new RouteControl(routeControlDiv, potential);
 
       routeControlDiv.index = 1;
       map.controls[google.maps.ControlPosition.TOP_RIGHT].push(routeControlDiv);
@@ -74,7 +74,7 @@ angular.module('sigApp')
 		* Creates the control required to calculate the optimal route.
 		* This button will be set on the google Maps.
 		*/
-    var RouteControl = function(controlDiv, cities, potential) {
+    var RouteControl = function(controlDiv, potential) {
       // Set CSS styles for the DIV containing the control
       // Setting padding to 5 px will offset the control
       // from the edge of the map.
@@ -100,7 +100,7 @@ angular.module('sigApp')
       ui.appendChild(text);
 
       google.maps.event.addDomListener(ui, 'click', function() {
-        calcRoute(cities, potential);
+        calcRoute(selectedMarkers, potential);
       });
 
       routeCtrl = ui;
@@ -254,21 +254,8 @@ angular.module('sigApp')
     }
 
     var feedRoute = function() {
+    	selectedMarkers = [];
     	$http.get('/api/rides/date/'+date, route).success(function(ride) {
-  			/*var selected = [];
-  			for (var i = 0; i != ride.selected.length; ++i){
-  				selected.push(ride.selected[i]);
-  			} 
-			
-  			selected = selected.substring(0, selected.length - 1);*/
-  			
-    		/*$http({
-    			method:'GET',
-    			url: '/api/clients/ids/',
-    			params: {
-    				id: JSON.stringify(ride.selected)
-    			}
-    		})*/
     		$http.get('/api/clients/ids/'+ride.selected).success(function(clients) {
     			for(var i = 0; i != clients.length; ++i) {
     				for(var j = 0; j != blueMarkers.length; ++j) {
@@ -276,14 +263,22 @@ angular.module('sigApp')
     						selectedMarkers.push(blueMarkers[j]);
     				}
     			}
-
+					
+					directionsDisplay.setMap(null);
     			google.maps.event.trigger(routeCtrl, 'click');
     		}).error(function(error) {
 
     		});
     	}).error(function(error) {
+    		clearHtml();
+    		directionsDisplay.setMap(null);
     		console.log('No route for this date.');
     	});
+    }
+
+    var clearHtml = function() {
+    	document.getElementById('route').innerHTML = "";
+    	document.getElementById('chart').innerHTML = "";
     }
 
     var saveRoute = function(legs) {
@@ -293,8 +288,6 @@ angular.module('sigApp')
     			selected.push(selectedMarkers[i].info._id);
     		}
 
-    		console.log(selected);
-    		console.log(client);
 	    	var route = {
 	    		date: date,
 	    		user: client._id,
@@ -317,6 +310,7 @@ angular.module('sigApp')
     * @potential: The potential clients list
     */
     var calcRoute = function (cities, potential) {
+    	directionsDisplay.setMap(map);
       for (var i = 0; i < infoWindows.length; i++) {
         infoWindows[i].close();
       }

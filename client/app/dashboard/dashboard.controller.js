@@ -5,7 +5,7 @@ angular.module('sigApp')
   $http.get('/api/clients').success(function(clients) {  
   	$http.get('/api/newClients').success(function(newClients) {  
 			GoogleMap.initialize(document.getElementById('map'), 
-			  document.getElementById('route'), 
+			  document.getElementById('route'),
 			  newClients, clients);
 
 		  $scope.redMarkers = GoogleMap.redMarkers();
