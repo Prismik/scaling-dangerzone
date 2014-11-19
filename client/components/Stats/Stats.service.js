@@ -9,11 +9,20 @@ angular.module('sigApp')
       
     }
 
+    /*
+    * Generate required data for the statistics
+    * of a given route.
+    * @route: The given route to make statistics about.
+    */
     var generate = function(route) {
     	generateChart(route);
     	return generateData(route);
     }
 
+    /*
+    * Generate data concerning a route.
+    * @record: The route.
+    */
     var generateData = function(record) {
     	var nbSteps = 0;
     	var seconds = 0;
@@ -31,6 +40,10 @@ angular.module('sigApp')
       }
     }
 
+    /*
+    * Generate an elevation chart for the route.
+    * @record: The route.
+    */
     var generateChart = function(record) {
       var lats = [];
       // For each route, display summary information.
@@ -49,6 +62,10 @@ angular.module('sigApp')
       elevator.getElevationAlongPath(pathRequest, plotElevation);
     }
 
+    /*
+    * Converts an amount of seconds to a time format.
+    * @sec: The amount of seconds.
+    */
     var convertSecondsToTime = function(sec) {
 	    var hours   = Math.floor(sec / 3600);
 	    var minutes = Math.floor((sec - (hours * 3600)) / 60);

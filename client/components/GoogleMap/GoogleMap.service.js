@@ -242,6 +242,9 @@ angular.module('sigApp')
       });
     }
 
+    /*
+    * Feeds a route into the google map.
+    */
     var feedRoute = function() {
     	selectedMarkers = [];
     	$http.get('/api/rides/date/'+date, route).success(function(ride) {
@@ -265,11 +268,17 @@ angular.module('sigApp')
     	});
     }
 
+    /*
+    * Clears the route and the chart div.
+    */
     var clearHtml = function() {
-    	document.getElementById('route').innerHTML = "";
-    	document.getElementById('chart').innerHTML = "";
+    	$('#route').empty();
+    	$('#chart').empty();
     }
 
+    /*
+    * Save or Update the route wether it already exists for a given date or not.
+    */
     var saveRoute = function(legs) {
     	$http.get('/api/users/me').success(function(client) {
     		var selected = [];
@@ -335,10 +344,10 @@ angular.module('sigApp')
 			    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
 			        e.preventDefault();
 			        var client = {
-			        	name: document.getElementById('name').value,
-			        	description: document.getElementById('description').value,
-			        	article: document.getElementById('article').value,
-			        	estimatedTime: document.getElementById('estimate').value
+			        	name: $('#name').val(),
+			        	description: $('#description').val(),
+			        	article: $('#article').val(),
+			        	estimatedTime: $('#estimate').val()
 			        };
 			        $http.put('/api/clients/' + info._id, client);
 			        $route.reload();
@@ -397,18 +406,19 @@ angular.module('sigApp')
       redMarkers.push(marker);
 
       google.maps.event.addListener(infoWindow, 'domready', function() {
-			    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
-			        e.preventDefault();
-			        var client = {
-			        	name: document.getElementById('name').value,
-			        	agent: document.getElementById('agent').value,
-			        	description: document.getElementById('description').value,
-			        	decision: document.getElementById('decision').value,
-			        	estimatedTime: document.getElementById('spent').value
-			        };
-			        $http.put('/api/newClients/' + info._id, client);
-			        $route.reload();
-			    });
+		    $('#' + info.name + '-form').find('#decision').val(info.decision);
+		    document.getElementById(info.name + '-form').addEventListener("submit", function(e) {
+	        e.preventDefault();
+	        var client = {
+	        	name: $('#name').val(),
+	        	agent: $('#agent').val(),
+	        	decision: $('#decision').val(),
+	        	description: $('#description').val(),
+	        	estimatedTime: $('#spent').val()
+	        };
+	        $http.put('/api/newClients/' + info._id, client);
+	        $route.reload();
+		    });
 			});
       google.maps.event.addListener(marker, 'click', function() {
         for (var i = 0; i < infoWindows.length; i++) {
@@ -473,7 +483,7 @@ angular.module('sigApp')
             '<select class="form-control" id="decision">' +
 						  '<option value="acc">Accepted</option>' +
 						  '<option value="ref">Refused</option>' +
-						  '<option value="wait">Waiting</option>' +
+						  '<option value="wait" selected="selected">Waiting</option>' +
             '</select>' +
             '<div class="form-group">' +
               '<label for="description">Description</label>' +
