@@ -22,10 +22,6 @@ angular.module('sigApp')
     var directionsDisplay = new google.maps.DirectionsRenderer();
     var geocoder;
 
-    var elevator = new google.maps.ElevationService();
-    var chart = new google.visualization.ColumnChart(document.getElementById('chart'));
-    var polyline;
-
     var mapOptions = {
         scrollwheel: false,
         zoom: 4,
@@ -151,15 +147,13 @@ angular.module('sigApp')
     var printRouteSummary = function(response) {
       directionsDisplay.setDirections(response);
       var route = response.routes[0];
-      
       var summary = '<h2>Direction steps</h2><br><table class="table">';
       var step = 1;
-      var lats = [];
+
       // For each route, display summary information.
       for (var i = 0; i < route.legs.length; i++) {
         var myRoute = route.legs[i];
         for (var j = 0; j < myRoute.steps.length; j++) {
-          lats.push(new google.maps.LatLng(myRoute.steps[j].start_location.lat(), myRoute.steps[j].start_location.lng()));
           summary += '<tr>' + 
             '<td>'+step.toString()+'</td>' +
             '<td>'+myRoute.steps[j].instructions+'</td>' +
@@ -168,13 +162,6 @@ angular.module('sigApp')
           ++step;
         }
       }
-
-      var pathRequest = {
-        'path': lats,
-        'samples': 256
-      }
-
-      elevator.getElevationAlongPath(pathRequest, plotElevation);
 
       summary += '</table>'
       routePanel.innerHTML = summary;
@@ -223,6 +210,7 @@ angular.module('sigApp')
 
             legsA.push({
             	distance: route.legs[i].distance.value,
+		          duration: route.legs[i].duration.value,
             	steps: steps
             });
           }
@@ -235,6 +223,7 @@ angular.module('sigApp')
 
                 legsB.push({
 		            	distance: route.legs[i].distance.value,
+		            	duration: route.legs[i].duration.value,
 		            	steps: route.legs[i].steps
 		            });
               }
@@ -298,7 +287,6 @@ angular.module('sigApp')
 	    	$http.get('/api/rides/date/'+date, route).success(function(ride) {
 	    		$http.put('/api/rides/' + ride._id, route);
 	    	}).error(function(error) {
-	    		console.log('error');
 	    		$http.post('/api/rides', route);
 	    	});
 	    });
@@ -510,49 +498,6 @@ angular.module('sigApp')
         '</form>';
 
       return popup;
-    }
-
-    /*
-    * Takes an array of ElevationResult objects, draws the path on the map
-    * and plots the elevation profile on a Visualization API ColumnChart.
-    * @results: The results from the elevation API
-    * @status: The status of the request, wether it worked or not
-    */
-    var plotElevation = function(results, status) {
-      if (status != google.maps.ElevationStatus.OK) {
-        return;
-      }
-      var elevations = results;
-      // Extract the elevation samples from the returned results
-      // and store them in an array of LatLngs.
-      var elevationPath = [];
-      for (var i = 0; i < results.length; i++) {
-        elevationPath.push(elevations[i].location);
-      }
-      
-      var data = new google.visualization.DataTable();
-      // Extract the data from which to populate the chart.
-      // Because the samples are equidistant, the 'Sample'
-      // column here does double duty as distance along the
-      // X axis.
-      data.addColumn('string', 'Sample');
-      data.addColumn('number', 'Elevation');
-      for (var i = 0; i < results.length; i++) {
-        data.addRow(['', elevations[i].elevation]);
-      }
-
-      // Draw the chart using the data within its DIV.
-      document.getElementById('chart').style.display = 'block';
-      chart.draw(data, {
-        height: 150,
-        legend: 'none',
-        titleY: 'Elevation (m)',
-        title: 'Elevation Chart',
-        titleTextStyle: {
-          fontSize: 20,
-          bold: true
-        }
-      });
     }
 
     /*

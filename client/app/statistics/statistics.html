@@ -9,11 +9,20 @@
 			  Routes
 			  <span class="pull-right glyphicon glyphicon-info-sign"></span>
 			  </a>
-			  <a ng-repeat-start="route in routes" href="/statistics" class="list-group-item">
-			  	{{route.title}} 
+			  <a ng-repeat-start="route in routes" href="/statistics" class="list-group-item" ng-click="generateStats($event, route)">
+			  	{{route.date}} 
 		    </a>
 			  <a ng-repeat-end=""></a>
 			</div>
+		</div>
+
+		<div id="chart">
+
+		</div>
+
+		<div ng-if="stat">
+			<p>Steps: {{stat.steps}}</p>
+			<p>Mission Time: {{stat.time}}</p>
 		</div>
 	</div>
 
